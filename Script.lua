@@ -290,6 +290,80 @@ end
    end    
 })
 
+Tab:AddToggle({
+ Name = "Притягивать ближайшие объекты к игрокам",
+ Default = false,
+ Callback = function(Value)
+    yen = Value
+    while yen and task.wait() do
+  local humanoids = {}
+for _, part in next, workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Character.HumanoidRootPart.Position, 50) do
+    if part.Parent:IsA("Model") and part.Parent:FindFirstChildOfClass("Humanoid") and not part:IsDescendantOf(game.Players.LocalPlayer.Character) and game.Players:GetPlayerFromCharacter(part.Parent) then
+      if not table.find(humanoids, part.Parent:FindFirstChildOfClass("Humanoid")) then
+        table.insert(humanoids, part.Parent:FindFirstChildOfClass("Humanoid"))
+      end
+    end
+  end
+
+  for _, humanoid in next, humanoids do
+    for _, part in next, workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Character.HumanoidRootPart.Position, 75) do
+      if part.Anchored == false and not part:IsDescendantOf(game.Players.LocalPlayer.Character) and not game.Players:GetPlayerFromCharacter(part.Parent) and not part:IsDescendantOf(humanoid.Parent) then
+        game.Players.LocalPlayer.SimulationRadius = math.huge
+        part.CustomPhysicalProperties = PhysicalProperties.new(100, 0, 0, 0, 0)
+        part.CanCollide = false
+        part.AssemblyLinearVelocity = (humanoid.RootPart.Position - part.Position).Unit * 500
+        part.AssemblyAngularVelocity = Vector3.new(300, 300, 300)
+        
+        for _, bv in next, part:GetDescendants() do
+          if bv:IsA("BodyMover") or bv:IsA("Constraint") then
+            bv:Destroy()
+          end
+        end
+      end
+    end
+    
+  end
+end
+   end    
+})
+
+Tab:AddToggle({
+ Name = "Притягивать ближайшие объекты к сущностям",
+ Default = false,
+ Callback = function(Value)
+     syg = Value
+     while sug and task.wait() do
+  local humanoids = {}
+for _, part in next, workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Character.HumanoidRootPart.Position, 50) do
+    if part.Parent:IsA("Model") and part.Parent:FindFirstChildOfClass("Humanoid") and not part:IsDescendantOf(game.Players.LocalPlayer.Character) then
+      if not table.find(humanoids, part.Parent:FindFirstChildOfClass("Humanoid")) then
+        table.insert(humanoids, part.Parent:FindFirstChildOfClass("Humanoid"))
+      end
+    end
+  end
+
+  for _, humanoid in next, humanoids do
+    for _, part in next, workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Character.HumanoidRootPart.Position, 75) do
+      if part.Anchored == false and not part:IsDescendantOf(game.Players.LocalPlayer.Character) and not game.Players:GetPlayerFromCharacter(part.Parent) and not part:IsDescendantOf(humanoid.Parent) then
+        game.Players.LocalPlayer.SimulationRadius = math.huge
+        part.CustomPhysicalProperties = PhysicalProperties.new(100, 0, 0, 0, 0)
+        part.CanCollide = false
+        part.AssemblyLinearVelocity = (humanoid.RootPart.Position - part.Position).Unit * 500
+        part.AssemblyAngularVelocity = Vector3.new(300, 300, 300)
+        
+        for _, bv in next, part:GetDescendants() do
+          if bv:IsA("BodyMover") or bv:IsA("Constraint") then
+            bv:Destroy()
+          end
+        end
+      end
+    end
+    
+  end
+end
+   end    
+})
+
 local Section = Tab:AddSection({
   Name = "Контроль над сущностями"
 })
@@ -512,5 +586,45 @@ elseif game.TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
   end)
 end
       end
+   end    
+}) 
+
+local Tab = Window:MakeTab({
+ Name = "Особое",
+ Icon = "rbxassetid://4483345998",
+ PremiumOnly = false
+})
+
+Tab:AddToggle({
+ Name = "Клиентская нулевая задержка",
+ Default = false,
+ Callback = function(Value)
+    hehn = Value
+     if hehn == true then
+       for _, func in next, {wait, task.wait} do
+ local hook; hook = hookfunction(func, newcclosure(function(...)
+    if not checkcaller() then
+        return hook()
+      else
+        return hook(...)
+     end
+  end))
+end
+     else
+       restorefunction(wait)
+       restorefunction(task.wait)
+     end
+   end    
+})
+
+Tab:AddButton({
+ Name = "Восстановить кнопку респавна",
+ Callback = function()
+     local a = Instance.new("BindableEvent")
+a.Event:Connect(function()
+  replicatesignal(game.Players.LocalPlayer.Kill)
+end)
+
+game.StarterGui:SetCore("ResetButtonCallback", a)
    end    
 })
