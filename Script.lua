@@ -364,6 +364,61 @@ end
    end    
 })
 
+Tab:AddToggle({
+ Name = "Режим чёрной дыры",
+ Default = false,
+ Callback = function(Value)
+  hjr = Value
+while hjr and task.wait() do
+  for _, part in next, workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position, 100) do
+    if part.Anchored == false and not part:IsDescendantOf(game.Players.LocalPlayer.Character) and not game.Players:GetPlayerFromCharacter(part.Parent) and not part.Parent:FindFirstChildOfClass("Humanoid") and not part:FindFirstChild("BudgifyAlgPos") then
+      game.Players.LocalPlayer.SimulationRadius = math.huge
+      part.CanCollide = false
+      part.CanTouch = false
+      part.CanQuery = false
+      part.CustomPhysicalProperties = PhysicalProperties.new(100, 0, 0, 0, 0)
+      part.AssemblyAngularVelocity = Vector3.new(350, 350, 350)
+      
+     local attach1 = Instance.new("Attachment", part)
+     local attach2 = Instance.new("Attachment", game.Players.LocalPlayer.Character.HumanoidRootPart)
+     attach2.Position = Vector3.new(0, 0, 0)
+     
+     part.Destroying:Connect(function()
+       attach2:Destroy()
+     end)
+
+     local alg = Instance.new("AlignPosition", game.Players.LocalPlayer.Character.HumanoidRootPart)
+     alg.Name = "BudgifyAlgPos"
+     alg.Attachment0 = attach1
+     alg.Attachment1 = attach2
+     alg.ApplyAtCenterOfMass = false
+     alg.MaxForce = math.huge
+     alg.MaxVelocity = math.huge
+     alg.MaxAxesForce = Vector3.new(math.huge, math.huge, math.huge)
+     
+     alg.Destroying:Connect(function()
+       pcall(function() attach1:Destroy() end)
+       pcall(function() attach2:Destroy() end)
+     end)
+     
+     task.spawn(function()
+       repeat task.wait() until hjr == false
+       pcall(function() alg:Destroy() end)
+       pcall(function() attach1:Destroy() end)
+       pcall(function() attach2:Destroy() end)
+     end)
+      
+      for _, bv in next, part:GetDescendants() do
+        if bv:IsA("BodyMover") or (bv:IsA("Constraint") and bv.Name ~= "BudgifyAlgPos") then
+          bv:Destroy()
+        end
+      end
+    end
+  end
+end
+   end    
+})
+
 local Section = Tab:AddSection({
   Name = "Контроль над сущностями"
 })
@@ -531,7 +586,7 @@ end
 })
 
 Tab:AddToggle({
- Name = "Анти откидывание объектами",
+ Name = "Анти читерское откидывание объектами",
  Default = false,
  Callback = function(Value)
   hueey = Value
