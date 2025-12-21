@@ -332,7 +332,7 @@ Tab:AddToggle({
  Default = false,
  Callback = function(Value)
      syg = Value
-     while sug and task.wait() do
+     while syg and task.wait() do
   local humanoids = {}
 for _, part in next, workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Character.HumanoidRootPart.Position, 50) do
     if part.Parent:IsA("Model") and part.Parent:FindFirstChildOfClass("Humanoid") and not part:IsDescendantOf(game.Players.LocalPlayer.Character) then
