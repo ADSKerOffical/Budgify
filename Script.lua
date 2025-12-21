@@ -511,7 +511,7 @@ jhg = Value
      while jhg and task.wait() do
        for _, plr in next, game:GetService("Players"):GetPlayers() do
          if plr ~= game:GetService("Players").LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-for _, part in next, plr.Character:GetChildren() do
+for _, part in next, plr.Character:GetDescendants() do
   if part:IsA("BasePart") then
  part.CanCollide = not jhg
  part.CanTouch = not jhg
