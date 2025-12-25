@@ -13,6 +13,53 @@ getgenv().isnetworkowner = newcclosure(function(part)
 end)
 
 local Section = Tab:AddSection({
+  Name = "Контроль над инструментами"
+})
+
+Tab:AddToggle({
+ Name = "Альтернативная килл аура",
+ Default = false,
+ Callback = function(Value)
+   chjj = Value
+    while chjj and task.wait() do
+  local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+  if tool and (tool:FindFirstChild("Handle") or tool:FindFirstChildWhichIsA("BasePart")) then
+    local handle, origgrip = (tool:FindFirstChild("Handle") or tool:FindFirstChildWhichIsA("BasePart")), tool.Grip
+    
+    local Chumanoid, Cdistance = nil, math.huge
+for _, part in next, game.Workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position, 100) do
+    if not part:IsDescendantOf(game.Players.LocalPlayer.Character) and part.Parent:FindFirstChildOfClass("Humanoid") and part.Parent:FindFirstChildOfClass("Humanoid"):GetState() ~= "Dead" then
+        local humanoid = part.Parent:FindFirstChildOfClass("Humanoid")
+        local distance = (part.Position - handle.Position).Magnitude 
+        if distance < Cdistance then
+            Cdistance = distance
+            Chumanoid = humanoid 
+        end
+    end
+end
+
+    if Chumanoid then
+      tool:Activate()
+      handle.Massless = true 
+      handle.Position = Chumanoid.RootPart.Position
+      for _, part in next, tool:GetDescendants() do
+        if part:IsA("BasePart") and part:FindFirstChildWhichIsA("TouchTransmitter") then
+          coroutine.wrap(function()
+           firetouchinterest(part, Chumanoid.RootPart, 0)
+           firetouchinterest(part, Chumanoid.RootPart, 1)
+          end)()
+         elseif part:IsA("BasePart") and not part:FindFirstChildWhichIsA("TouchTransmitter") then
+          part.Massless = true 
+          part.Position = Chumanoid.RootPart.Position
+        end
+      end
+    end
+  end
+end
+   end    
+})
+
+local Section = Tab:AddSection({
   Name = "Контроль над TouchTransmitter"
 })
 
@@ -395,6 +442,7 @@ while hjr and task.wait() do
      alg.MaxForce = math.huge
      alg.MaxVelocity = math.huge
      alg.MaxAxesForce = Vector3.new(math.huge, math.huge, math.huge)
+     alg.RigidityEnabled = true
      
      alg.Destroying:Connect(function()
        pcall(function() attach1:Destroy() end)
@@ -463,6 +511,94 @@ while yoo and task.wait() do
     end
   end
  end
+   end    
+})
+
+Tab:AddToggle({
+ Name = "Заморозить ближайших сущностей",
+ Default = false,
+ Callback = function(Value)
+   ieuih = Value
+    while ieuih and task.wait() do
+  local humanoids = {}
+for _, part in next, workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Character.HumanoidRootPart.Position, 70) do
+    if part.Parent:IsA("Model") and part.Parent:FindFirstChildOfClass("Humanoid") and not part:IsDescendantOf(game.Players.LocalPlayer.Character) and not game.Players:GetPlayerFromCharacter(part.Parent) then
+      if not table.find(humanoids, part.Parent:FindFirstChildOfClass("Humanoid")) then
+        table.insert(humanoids, part.Parent:FindFirstChildOfClass("Humanoid"))
+      end
+    end
+  end
+
+for _, humanoid in next, humanoids do
+  sethiddenproperty(game.Players.LocalPlayer, "SimulationRadius", math.huge)
+  humanoid.WalkSpeed = 0
+  humanoid.JumpPower = 0
+  
+  for _, state in next, {"Running", "Jumping"} do
+    pcall(function() humanoid:SetStateEnabled(state, false) end)
+  end
+  
+  for _, part in next, humanoid.Parent:GetDescendants() do
+    if part:IsA("BasePart") and isnetworkowner(part) then
+      sethiddenproperty(part, "NetworkOwnershipRule", Enum.NetworkOwnership.Manual)
+      sethiddenproperty(part, "Friction", math.huge)
+      sethiddenproperty(part, "Elasticity", math.huge)
+      
+      if part:FindFirstChildWhichIsA("TouchTransmitter") then
+        for _, con in next, getconnections(part.Touched) do
+          con:Disconnect()
+        end
+      end
+    end
+  end
+  
+  humanoid:SetStateEnabled("PlatformStanding", true)
+  humanoid.PlatformStand = true
+  humanoid.EvaluateStateMachine = true
+  
+  if not (humanoid.RootPart and humanoid.RootPart:FindFirstChild("BudgifyFreezeHumPart")) then
+    local part = Instance.new("Part", humanoid.RootPart)
+    part.Name = "BudgifyFreezeHumPart"
+    part.Anchored = true
+    part.Size = Vector3.zero
+    part.CFrame = humanoid.RootPart.CFrame
+    part.CanCollide = false
+
+    local rotate = Instance.new("Rotate", part)
+    rotate.Part0 = humanoid.RootPart
+    rotate.Part1 = part
+    rotate.C0 = CFrame.new(0, 0, 0)
+    
+      task.spawn(function()
+        repeat task.wait() until not isnetworkowner(part) or ieuih == false
+        pcall(function() part:Destroy() end)
+      end)
+    end
+  end
+end
+   end    
+})
+
+Tab:AddToggle({
+ Name = "Забаговать ближайших сущностей",
+ Default = false,
+ Callback = function(Value)
+   jush = Value
+    while jush and task.wait(wait()) do
+local humanoids = {}
+for _, part in next, workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart", 10).Position, 75) do
+    if part.Parent:IsA("Model") and part.Parent:FindFirstChildOfClass("Humanoid") and not part:IsDescendantOf(game.Players.LocalPlayer.Character) and not game.Players:GetPlayerFromCharacter(part.Parent) then
+      if not table.find(humanoids, part.Parent:FindFirstChildOfClass("Humanoid")) then
+        table.insert(humanoids, part.Parent:FindFirstChildOfClass("Humanoid"))
+      end
+    end
+  end
+
+  for _, humanoid in next, humanoids do
+    sethiddenproperty(game.Players.LocalPlayer, "SimulationRadius", math.huge)
+    humanoid.RootPart.Position = Vector3.new(1000, 1000, 1000)
+  end
+end
    end    
 })
 
@@ -643,6 +779,47 @@ end
       end
    end    
 }) 
+
+Tab:AddButton({
+ Name = "Подчинить себе ближайшие объекты под контролем читера\n(Находится в разработке)",
+ Callback = function()
+local pos, cansit = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame, game.Players.LocalPlayer.Character.Humanoid:GetStateEnabled("Seated")
+game.Players.LocalPlayer.Character.Humanoid:SetStateEnabled("Seated", false)
+for _, part in next, game.Workspace:GetPartBoundsInRadius(pos.Position, 100) do
+  if part.Anchored == false and not part:IsDescendantOf(game.Players.LocalPlayer.Character) and not game.Players:GetPlayerFromCharacter(part.Parent) and not part.Parent:FindFirstChildOfClass("Humanoid") then
+    if not isnetworkowner(part) and not part:FindFirstChildOfClass("TouchTransmitter") and not part:FindFirstAncestorOfClass("Model").PrimaryPart then
+      local countdown = os.clock()
+    
+      repeat task.wait()
+        sethiddenproperty(game.Players.LocalPlayer, "SimulationRadius", math.huge)
+        sethiddenproperty(game.Players.LocalPlayer, "MaxSimulationRadius", math.huge)
+        -- sethiddenproperty(game.Players.LocalPlayer, "MaximumSimulationRadius", math.huge)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = part.CFrame
+      until isnetworkowner(part) or os.clock() - countdown >= 1
+    elseif not isnetworkowner(part) and (part.Parent and part:FindFirstAncestorOfClass("Model") and part:FindFirstAncestorOfClass("Model").PrimaryPart ~= nil) then
+      local countdown = os.clock()
+      repeat task.wait()
+        sethiddenproperty(game.Players.LocalPlayer, "SimulationRadius", math.huge)
+        sethiddenproperty(game.Players.LocalPlayer, "MaxSimulationRadius", math.huge)
+        -- sethiddenproperty(game.Players.LocalPlayer, "MaximumSimulationRadius", math.huge)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = part:FindFirstAncestorOfClass("Model").PrimaryPart.CFrame
+      until isnetworkowner(part:FindFirstAncestorOfClass("Model").PrimaryPart) or os.clock() - countdown >= 1
+    end
+  end
+end
+game.Players.LocalPlayer.Character.Humanoid:SetStateEnabled("Seated", cansit)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
+game.Players.LocalPlayer.Character.Humanoid:ChangeState("GettingUp", true)
+
+for _, part in next, game.Players.LocalPlayer.Character:GetDescendants() do
+  if part:IsA("BasePart") then
+    part.Velocity = Vector3.zero
+    part.AssemblyLinearVelocity = Vector3.zero
+    part.AssemblyAngularVelocity = Vector3.zero
+  end
+end
+   end    
+})
 
 local Tab = Window:MakeTab({
  Name = "Особое",
