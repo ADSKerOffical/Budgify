@@ -194,6 +194,43 @@ Tab:AddToggle({
 end
 })
 
+Tab:AddToggle({
+ Name = "Флинг v2",
+ Default = false,
+ Callback = function(Value)
+   uue = Value
+   local coje = game.Players.LocalPlayer.Character.Humanoid.Running:Connect(function(speed)
+  if speed > 0 and game.Players.LocalPlayer.Character.Humanoid.MoveDirection.Magnitude > 0 then
+   local bv = Instance.new("BodyVelocity", game.Players.LocalPlayer.Character.HumanoidRootPart)
+bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+bv.Velocity = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector * game.Players.LocalPlayer.Character.Humanoid.WalkSpeed
+bv.P = math.huge
+
+   repeat task.wait()
+  bv.Velocity = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector * game.Players.LocalPlayer.Character.Humanoid.WalkSpeed
+  game.Players.LocalPlayer.SimulationRadius = math.huge
+  if game.Players.LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.FallingDown or game.Players.LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.PlatformStanding or game.Players.LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.Seated then
+    game.Players.LocalPlayer.Character.Humanoid:ChangeState("GettingUp")
+  end
+  for _, part in next, game.Players.LocalPlayer.Character:GetDescendants() do
+    if part:IsA("BasePart") then
+      part.CustomPhysicalProperties = PhysicalProperties.new(100, 0, 0, 0, 0)
+      part.AssemblyLinearVelocity = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector * 4000
+      part.Velocity = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector * 4000
+    end
+  end
+until bv.Parent == nil or game.Players.LocalPlayer.Character.Humanoid:GetState() ~= Enum.HumanoidStateType.Running
+   pcall(function() bv:Destroy() end)
+   game.Players.LocalPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+  end
+end)
+
+     task.spawn(function()
+       repeat task.wait() until uue == false coje:Disconnect()
+     end)
+   end    
+})
+
 local Section = Tab:AddSection({
   Name = "Контроль над машинами"
 })
@@ -858,5 +895,25 @@ a.Event:Connect(function()
 end)
 
 game.StarterGui:SetCore("ResetButtonCallback", a)
+   end    
+})
+
+Tab:AddToggle({
+ Name = "Увеличить радиус симуляции",
+ Default = false,
+ Callback = function(Value)
+    oiebb = Value
+     while oiebb and task.wait() do
+  sethiddenproperty(game.Players.LocalPlayer, "SimulationRadius", math.huge)
+  sethiddenproperty(game.Players.LocalPlayer, "MaxSimulationRadius", math.huge)
+  
+  for _, plr in next, game.Players:GetPlayers() do
+    if plr ~= game.Players.LocalPlayer then
+      sethiddenproperty(plr, "SimulationRadius", 0)
+      sethiddenproperty(plr, "MaxSimulationRadius", 0)
+      sethiddenproperty(plr, "MaximumSimulationRadius", 0)
+    end
+  end
+end
    end    
 })
