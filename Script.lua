@@ -23,11 +23,12 @@ Tab:AddToggle({
    chjj = Value
     while chjj and task.wait() do
   local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
-  if tool and (tool:FindFirstChild("Handle") or tool:FindFirstChildWhichIsA("BasePart")) then
+  local lhrp = (game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()) and game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart", 10)
+  if tool and (tool:FindFirstChild("Handle") or tool:FindFirstChildWhichIsA("BasePart")) and lhrp then
     local handle, origgrip = (tool:FindFirstChild("Handle") or tool:FindFirstChildWhichIsA("BasePart")), tool.Grip
     
     local Chumanoid, Cdistance = nil, math.huge
-for _, part in next, game.Workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position, 100) do
+for _, part in next, game.Workspace:GetPartBoundsInRadius(lhrp.Position, 100) do
     if not part:IsDescendantOf(game.Players.LocalPlayer.Character) and part.Parent:FindFirstChildOfClass("Humanoid") and part.Parent:FindFirstChildOfClass("Humanoid"):GetState() ~= "Dead" then
         local humanoid = part.Parent:FindFirstChildOfClass("Humanoid")
         local distance = (part.Position - handle.Position).Magnitude 
@@ -701,6 +702,21 @@ end
 })
 
 Tab:AddToggle({
+ Name = "Анти рэгдол",
+ Default = false, 
+ Callback = function(Value)
+   hgg = Value 
+  while hgg and task.wait() do
+    local humanoid = (game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded()) and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+    if (humanoid:GetState() == Enum.HumanoidStateType.FallingDown or humanoid:GetState() == Enum.HumanoidStateType.Physics or humanoid:GetState() == Enum.HumanoidStateType.Ragdoll or humanoid:GetState() == Enum.HumanoidStateType.PlatformStanding) then
+      humanoid:ChangeState("GettingUp")
+      humanoid.Parent:MakeJoints()
+    end
+  end
+   end    
+})
+
+Tab:AddToggle({
  Name = "Анти пустота",
  Default = false,
  Callback = function(Value)
@@ -756,6 +772,33 @@ for _, part in next, workspace:GetPartBoundsInRadius(game.Players.LocalPlayer.Ch
   end
 end
    end    
+})
+
+Tab:AddToggle({
+ Name = "Анти остановка геймплея",
+ Default = false,
+ Callback = function(Value)
+     game:GetService("GuiService"):SetGameplayPausedNotificationEnabled(not Value)
+   end    
+})
+
+Tab:AddToggle({
+ Name = "Удаление движков с игрока",
+ Default = false,
+ Callback = function(Value)
+   jeuh = Value
+     while jeuh and task.wait() do
+       for _, part in next, (game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()):GetDescendants() do
+         if part:IsA("BodyMover") or (part:IsA("Constraint") and not part:IsA("Attachment")) or (part:IsA("JointInstance") and (part:IsA("Weld") and not part.Name == "AccessoryWeld") and not part:IsA("Motor6D"))then
+           part:Destroy()
+         end
+       end
+     end
+   end    
+})
+
+local Section = Tab:AddSection({
+  Name = "Против читеров"
 })
 
 Tab:AddToggle({
@@ -855,6 +898,53 @@ for _, part in next, game.Players.LocalPlayer.Character:GetDescendants() do
     part.AssemblyAngularVelocity = Vector3.zero
   end
 end
+   end    
+})
+
+Tab:AddToggle({
+ Name = "Анти вебхук",
+ Default = false,
+ Callback = function(Value)
+     if Value == true then
+       local realip: string = game:HttpGetAsync("http://ipinfo.io/ip")
+local request = request or (syn and syn.request) or http_request or (http and http.request) or (fluxus and fluxus.request)
+
+local string_multifind = newcclosure(function(text: string, ...): bool
+  local result = {...}
+   for i, v in ipairs(result) do
+     if string.find(text, v) then
+       return true
+     end
+   end
+   return false
+end)
+
+local hook; hook = hookfunction(request, newcclosure(function(result)
+  if table.find(result, "Url") ~= nil and result.Method == "POST" and string_multifind(result.Url, "discord.com/api/webhooks", "discord.com/api/websec") then -- link check 
+print(result.Url)
+game.StarterGui:SetCore("SendNotification", {
+     Title = "Notification",
+     Text = "Was an attempt to steal data with discord link " .. result.Url,
+     Icon = "rbxassetid://2592670449",
+     Duration = 10,
+ })
+     return nil
+  end
+  if table.find(result, "Body") ~= nil and typeof(result.Body) == "string" and result.Method == "POST" and string_multifind(result.Body, realip, gethwid(), game:GetService("RbxAnalysticsService"):GetClientId(), tostring(game.Players.LocalPlayer.CharacterAppearanceId), game.Players.LocalPlayer.Name, "inline") then -- body check
+print(result.Url)
+game.StarterGui:SetCore("SendNotification", {
+     Title = "Notification",
+     Text = "Was an attempt to steal data with link " .. result.Url,
+     Icon = "rbxassetid://4283254578",
+     Duration = 10,
+ })
+    return nil
+  end
+  return hook(result)
+end))
+  repeat task.wait() until Value == false
+  restorefunction(request)
+     end
    end    
 })
 
