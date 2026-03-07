@@ -1,0 +1,42 @@
+Чтобы обозначить строку её нужно обозначить кавычками:
+
+str = "string"
+print(str) # string
+
+Строки можно складывать, но главное проверять тип данных
+
+str = "my name is "
+print(str + "Denis") # my name is Denis
+
+Также можно использовать print(f:
+
+print(f"Answer: {3+6}") # Answer: 9
+
+Если же ты хочешь сделать тип данных в строку то используй функцию str:
+
+print("Answer: " + str(3+2)) # Answer: 5
+
+Для работы с строками существует много функций:
+
+• len(string): int – получает количество символов в строке
+  Пример:
+    print(len("Denis" + "5")) # 6
+• str.upper(): string – делает все буквы большими
+  Пример:
+    text = "string"
+    print(text.upper()) # STRING
+• str.isprintable(): boolean – проверяет можно ли вывести строку в консоль
+   Пример:
+     text = "ueuueu"
+     print(text.isprintable()) # True
+
+Можно получить конкретный символ с помощью квадратных скобок:
+
+text = "string"
+print(text[0], text[1]) # s t
+
+А также можно сделать итерацию строки:
+
+text = "string"
+for i in text:
+  print(i)
