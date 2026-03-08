@@ -12,6 +12,15 @@ import time
 while True:
   time.sleep(0.5)
   print("Text")
+  
+Чтобы остановить цикл нужно использовать break
+
+a = 0
+while True:
+  a = a + 1
+  if a >= 100:
+    break
+print(a) # это случится практически моментально
 
 Этот скрипт будет каждые пол секунды выводить Text.
 Если ты хочешь повторить действие несколько раз то используй for итератор и функцию range:
@@ -20,3 +29,11 @@ for num in range(10):
     print(num + 1)
 
 Этот скрипт будет повторяться 10 раз. num с самого начала начинается на 0
+Ты можешь прервать итерацию и начать следующую с помощью continue:
+
+a = ["Apple", "Banana", "Chicken", "Watermelon"]
+for i in a:
+  if i == "Chicken":
+    continue
+  else:
+    print(i) # Выведет всё кроме Chicken
