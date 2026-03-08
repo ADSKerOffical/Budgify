@@ -1,0 +1,33 @@
+Модуль threading нужен для создания нового потока. Это позволит не задерживать основной поток скрипта
+Вот функции этого модуля:
+
+• threading.Thread(target=func) – создаёт новый поток функции с возможностью включить его
+Пример:
+
+import time
+import threading
+nowtime = time.time()
+
+def test():
+  time.sleep(1)
+  print("After second")
+
+threading.Thread(target=test).start() # запускает функцию. Через секунду выведет After second
+print(time.time() - nowtime)
+
+А также он имеет атрибуты: {
+  start() – запускает поток
+  name – получает имя функции в потоке
+  run() – запускает функцию 
+  is_alive() – поток запущен или нет
+}
+
+• threading.current_thread() – получает имя потока
+Пример:
+
+import threading
+def test():
+  print(threading.current_thread())
+
+print(threading.current_thread()) # MainThread
+test() # тоже MainThread
