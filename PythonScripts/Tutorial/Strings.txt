@@ -8,6 +8,7 @@ print(str) # string
 str = "my name is "
 print(str + "Denis") # my name is Denis
 
+Ты можешь умножать если хочешь повторять строку (string * int)
 Также можно использовать print(f:
 
 print(f"Answer: {3+6}") # Answer: 9
