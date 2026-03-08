@@ -1,0 +1,89 @@
+В Python много всяких операторов. Без них никакой скрипт не сделаешь.
+Вот лист операторов:
+
+• <obj1> is <obj2> – проверяет obj1 один равен obj2. Это более точно может понять что те или иные объекты равны
+Пример:
+
+a = [1, 2]
+b = [1, 2]
+c = a
+print(a == b, a == c) # True True
+print(a is b, a is c) # False True
+
+• break – заканчивает цикл или итерацию
+Пример:
+
+n = 0
+while True:
+  n = n + 1
+  if n >= 50:
+    break
+print(n)
+  
+• continue – заканчивает текущую итерацию и начинает новую 
+Пример:
+
+for i in range(10):
+  if i % 2 == 0:
+    print(i) # только чётные (от 0 до 8)
+    
+• def <funcName> – создаёт новую функцию
+Пример:
+
+def test():
+  print("Text")
+  
+test() # Text
+
+• return <variant> – возвращает значение которое должна возвращать функция
+Пример:
+
+def test():
+  return 1
+
+print(2 + test()) # 3
+
+• while <condition> – создаёт цикл который будет повторяться вечно (до первого break или return)
+Пример:
+
+n = 0
+while n < 20:
+  n = n + 1
+print(n) # 20
+
+• for – делает итерацию таблицы 
+Пример:
+
+table = ["Apple", "Banana", "Orange", "Kiwi"]
+for i in table:
+  print(i) # Apple Banana Orange Kiwi
+  
+• if <condition>; else, not <condition>, or <condition>, elif <condition> – условные (тернарные) операторы
+Пример:
+
+age = 10
+name = "Denis"
+vip = false
+if age < 18 and not name == "Denis":
+  print("Запрещено")
+elif age < 18 and name == "Denis":
+  print("Частично разрешено") # Выведет это
+elif age > 18 or vip == true:
+  print("Разрешено")
+  
+• import <moduleName> – получает доступ к модулю
+Пример:
+
+import time
+time.sleep(1) 
+
+• in <obj> – проверяет присутствие в чём либо или получает доступ к этому
+Пример:
+
+print("a" in "abc") # True
+
+• from <module> import <name> – используется для импорта конкретных имён из модуля или пакета в текущую область имён
+Пример:
+
+from math import pi
+print(pi) # 3.1415...
