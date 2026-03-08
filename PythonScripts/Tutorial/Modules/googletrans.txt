@@ -1,0 +1,19 @@
+Библиотека googletrans используется для перевода текста. Это не официальный модуль
+Он может плохо работать и поэтому его стоит использовать с asyncio
+Пример скрипта:
+
+import asyncio
+from googletrans import Translator
+
+async def test():
+  translator = Translator()
+  result = await translator.translate("Hello", dest="ru")
+  print(result.text)
+
+asyncio.run(test()) # Привет
+
+У него ещё есть атрибуты:
+
+• googletrans.client – откуда вызван запрос
+• googletrans.__version__ – версия модуля
+• googletrans.LANGUAGE – список всех доступных языков
