@@ -1,19 +1,77 @@
+local disconn = newcclosure(function(inst, filter, action)
+  for _, signal in next, game:GetService("ReflectionService"):GetEventsOfClass(inst.ClassName) do
+    if table.find(filter, signal.Name) then
+      for _, con in next, getconnections(inst[signal.Name]) do
+        if getfenv(con.Function).script ~= getfenv(0).script then
+          con[action](con)
+        end
+      end
+    end
+  end
+end)
+
+for i, v in next, getgc(true) do
+   if typeof(v) == "table" and rawget(v, "Detected") and typeof(rawget(v, "Detected")) == "function" then
+   setthreadidentity(2)
+     local Detected, Kill = rawget(v, "Detected"), rawget(v, "Kill")
+
+     local hook1; hook1 = hookfunction(Detected, function(Action, Info, NoCrash)
+       return true
+     end)
+
+     if rawget(v, "Variables") and rawget(v, "Process") and typeof(Kill) == "function" then
+       local hook2; hook2 = hookfunction(Kill, function(info) end)
+   end 
+
+  local hook3; hook3 = hookfunction(getrenv().debug.info, newcclosure(function(...)
+      local lineorf = ...
+      if Detected and lineorf == Detected then
+        return coroutine.yield(coroutine.running())
+      end
+      return hook3(...)
+    end))
+    setthreadidentity(8)
+  end 
+end
+
+disconn(game:GetService("ContextActionService"), {"LocalToolEquipped", "LocalToolUnequipped"}, "Disconnect")
+disconn(game.Players.LocalPlayer.Backpack, {"ChildAdded", "DescendantAdded"}, "Disable")
+
 game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
-local tool = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
+local tool = cloneref(Instance.new("Tool", game.Players.LocalPlayer.Backpack))
 tool.Name = "Tool gun"
 tool.RequiresHandle = false
 tool.ToolTip = "Universal weapon for exploit makers"
 tool.GripPos = Vector3.new(0, -0.45, 0.75)
+
+for _, con in getconnections(game.Players.LocalPlayer.Character.ChildAdded) do
+  if con.Function and (getfenv(con.Function).script:IsA("LocalScript") and getfenv(con.Function).script ~= getfenv(0).script) then
+    con:Disconnect()
+  end
+end
+
 local currentScript = getfenv(0).script
+local toolmode = 1
+local CanQueryBypass = false
+local GuiMode = false
 
 local hook; hook = hookmetamethod(workspace, "__newindex", newcclosure(function(self, index, value)
-  if checkcaller() and getfenv(0).script == currentScript and self:IsA("BasePart") and index == "CanQuery" then
+  if checkcaller() and CanQueryBypass == true and getfenv(0).script == currentScript and self:IsA("BasePart") and index == "CanQuery" then
     return true
+  elseif not checkcaller() and self == tool then
+    return nil
   end
   return hook(self, index, value)
 end))
 
-local STARTER_GUI = game:GetService("StarterGui")
+local hook; hook = hookmetamethod(game, "__index", newcclosure(function(self, index)
+  if not checkcaller() and self == tool then
+    return nil
+  end
+  return hook(self, index)
+end))
+
+local STARTER_GUI = cloneref(game:GetService("StarterGui"))
 local hook; hook = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
   if not checkcaller() and getfenv(0).script ~= currentScript and self == STARTER_GUI then
     local args = {...}
@@ -22,22 +80,27 @@ local hook; hook = hookmetamethod(game, "__namecall", newcclosure(function(self,
     elseif getnamecallmethod() == "SetCoreGuiEnabled" and #args > 0 and args[1] == Enum.CoreGuiType.Backpack then
       return nil
     end
+    elseif getfenv(0).script ~= currentScript and self == tool then
+    return nil
   end
   return hook(self, ...)
 end))
 
-local handle = Instance.new("Part", tool)
+local antibackpack = game:GetService("StarterGui").CoreGuiChangedSignal:Connect(function(core, bool)
+  if getfenv(0).script ~= currentScript and core == Enum.CoreGuiType.Backpack then
+    game.StarterGui:SetCoreGuiEnabled("Backpack", true)
+  end
+end)
+
+local handle = cloneref(Instance.new("Part", tool))
 handle.Name = "Handle"
 handle.Massless = true
 handle.Anchored = false
 
-local mesh = Instance.new("SpecialMesh", handle)
+local mesh = cloneref(Instance.new("SpecialMesh", handle))
 mesh.MeshId = "rbxassetid://4658783228"
 mesh.TextureId = "rbxassetid://4658783257"
 mesh.Scale = Vector3.new(0.15, 0.175, 0.2)
-
-local toolmode = 1
-local filterMode = 1
 
 local ScreenGui = Instance.new("ScreenGui", gethui and gethui() or cloneref(game.CoreGui))
 ScreenGui.Enabled = false
@@ -126,24 +189,28 @@ end
     partTweenn2:Play()
 end)
 
---[[local fiterButton = extra:Clone()
-filterButton.Parent = ScreenGui
-filterButton.Position = UDim2.new(0.91, 0, 52, 0)
-filterButton.Text = "NoFilter"
+local CQBypass = extra:Clone()
+CQBypass.Parent = ScreenGui
+CQBypass.Position = UDim2.new(0.94, 0, 0.52, 0)
+CQBypass.Text = "Enable CanQuery Bypass"
+CQBypass.TextWrapped = true
+CQBypass.TextColor3 = Color3.new(1, 0, 0)
 
-filterButton.MouseButton1Click:Connect(function()
- filterMode = 1
-  if filterMode > 4 then
-    filterMode = 1
-  end
-end)]]--
+CQBypass.MouseButton1Click:Connect(function()
+ CanQueryBypass = not CanQueryBypass
+ if CanQueryBypass == true then
+   CQBypass.TextColor3 = Color3.new(0, 1, 0)
+ else
+   CQBypass.TextColor3 = Color3.new(1, 0, 0)
+ end
+end)
 
 local getproperties = newcclosure(function(instance)
 local properties = {}
-    for _, propertyName in ipairs(game:GetService("ReflectionService"):GetPropertyNames(instance.ClassName)) do
+    for _, property in next, game:GetService("ReflectionService"):GetPropertiesOfClass(instance.ClassName) do
       pcall(function()
-        if instance[propertyName] ~= nil then
-            properties[propertyName] = instance[propertyName]
+        if gethiddenproperty(instance, property.Name) ~= nil then
+            properties[property.Name] = gethiddenproperty(instance, property.Name)
         end
       end)
     end
@@ -152,8 +219,11 @@ end)
 
 Button.MouseButton1Click:Connect(function()
     toolmode += 1
-     if toolmode > 8 then
+     if toolmode > 11 then
 toolmode = 1
+     end
+     if toolmode < 10 then
+       pcall(function() Button:FindFirstChildOfClass("UIGradient"):Destroy() end)
      end
  if toolmode == 1 then
 Button.BackgroundColor3 = Color3.new(0.35, 0, 0)
@@ -171,6 +241,13 @@ Button.BackgroundColor3 = Color3.new(0.5, 0.25, 0.1)
 Button.BackgroundColor3 = Color3.new(0.1, 0.25, 0.5)
   elseif toolmode == 8 then
 Button.BackgroundColor3 = Color3.new(0.5, 0.25, 0.5)
+   elseif toolmode == 9 then
+Button.BackgroundColor3 = Color3.new(0, 0.6, 0.6)
+  elseif toolmode == 10 then
+Instance.new("UIGradient", Button).Color = ColorSequence.new(Color3.new(0, 1, 0), Color3.new(0, 0, 1))
+  elseif toolmode == 11 then
+Button:ClearAllChildren()
+Instance.new("UIGradient", Button).Color = ColorSequence.new(Color3.new(0, 0, 1), Color3.new(1, 0, 0))
  end
 local sound = Instance.new("Sound", handle)
 sound.SoundId = "rbxassetid://18755588842"
@@ -178,110 +255,34 @@ sound.Volume = 2
 sound.PlaybackSpeed = 1
 sound.Looped = false
 sound:Play()
- game.Debris:AddItem(sound, 3)
+ game.Debris:AddItem(sound, 2)
 end)
 
-local function mode1(mouset)
+local function mode(mouset)
   if mouset then
-setclipboard(tostring(mouset:GetFullName()))
-
-local Highlight = Instance.new("Highlight")
-Highlight.Parent = mouset
-Highlight.Adornee = mouset
-Highlight.FillTransparency = 0
-Highlight.FillColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineTransparency = 0
-game.Debris:AddItem(Highlight, 4)
-
-local partTweenn2 = game:GetService("TweenService"):Create(Highlight, TweenInfo.new(1, Enum.EasingStyle.Sine), {
-        FillTransparency = 1,
-        OutlineTransparency = 1
-    })
-    partTweenn2:Play()
-  end
-end
-
-local function mode2(mouset)
-  if mouset then
-  
+ if toolmode == 1 then
+ setclipboard(tostring(mouset:GetFullName()))
+ elseif toolmode == 2 then
   for i, v in next, getproperties(mouset) do
    pcall(function() print(i, v) end)
   end
-  
-local Highlight = Instance.new("Highlight")
-Highlight.Parent = mouset
-Highlight.Adornee = mouset
-Highlight.FillTransparency = 0
-Highlight.FillColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineTransparency = 0
-game.Debris:AddItem(Highlight, 4)
-
-local partTweenn2 = game:GetService("TweenService"):Create(Highlight, TweenInfo.new(1, Enum.EasingStyle.Sine), {
-        FillTransparency = 1,
-        OutlineTransparency = 1
-    })
-    partTweenn2:Play()
+ elseif toolmode == 3 then
+  for _, obj in ipairs(mouset:GetDescendants()) do
+   print(obj:GetFullName())
   end
-end
-
-local function mode3(mouset)
-  if mouset then
-for _, obj in ipairs(mouset:GetDescendants()) do
-  print(obj:GetFullName())
-end
-
-local Highlight = Instance.new("Highlight")
-Highlight.Parent = mouset
-Highlight.Adornee = mouset
-Highlight.FillTransparency = 0
-Highlight.FillColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineTransparency = 0
-game.Debris:AddItem(Highlight, 4)
-
-local partTweenn2 = game:GetService("TweenService"):Create(Highlight, TweenInfo.new(1, Enum.EasingStyle.Sine), {
-        FillTransparency = 1,
-        OutlineTransparency = 1
-    })
-    partTweenn2:Play()
-  end
-end
-
-local function mode4(mouset)
-  if mouset then
-   for _, dec in next, mouset:GetDescendants() do
+ elseif toolmode == 4 then
+ for _, dec in next, mouset:GetDescendants() do
      if dec:IsA("Decal") or dec:IsA("Texture") or dec:IsA("ParticleEmitter") or dec:IsA("Beam") or dec:IsA("Trail") then
-print(dec.ClassName, dec.Texture)
-     elseif dec:IsA("SurfaceGui") or dec:IsA("BillboardGui") and dec:FindFirstChildOfClass("ImageLabel") then
-  for _, bil in next, dec:GetDescendants() do
-    if bil:IsA("ImageLabel") then
-print(bil.ClassName, bil.Image)
+       print(dec.ClassName, dec:GetFullName(), dec.Texture)
+     elseif dec:IsA("SurfaceGui") or dec:IsA("BillboardGui") then
+       for _, v in dec:GetDescendants() do
+         if v:IsA("ImageLabel") then
+           print(v.ClassName, v:GetFullName(), v.Image)
+         end
+      end
     end
   end
-     end
-   end
-   
-local Highlight = Instance.new("Highlight")
-Highlight.Parent = mouset
-Highlight.Adornee = mouset
-Highlight.FillTransparency = 0
-Highlight.FillColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineTransparency = 0
-game.Debris:AddItem(Highlight, 4)
-
-local partTweenn2 = game:GetService("TweenService"):Create(Highlight, TweenInfo.new(1, Enum.EasingStyle.Sine), {
-        FillTransparency = 1,
-        OutlineTransparency = 1
-    })
-    partTweenn2:Play()
-   end
-end
-
-local function mode5(mouset)
-  if mouset then
+ elseif toolmode == 5 then
  if mouset:IsA("MeshPart") then
    print(mouset.ClassName, mouset.MeshId, mouset.TextureID)
  end
@@ -292,82 +293,60 @@ print(mes.ClassName, mes.MeshId, mes.TextureId)
 print(mes.ClassName, mes.MeshId, mes.TextureID)
       end
     end
-    
-local Highlight = Instance.new("Highlight")
-Highlight.Parent = mouset
-Highlight.Adornee = mouset
-Highlight.FillTransparency = 0
-Highlight.FillColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineTransparency = 0
-game.Debris:AddItem(Highlight, 4)
-
-local partTweenn2 = game:GetService("TweenService"):Create(Highlight, TweenInfo.new(1, Enum.EasingStyle.Sine), {
-        FillTransparency = 1,
-        OutlineTransparency = 1
-    })
-    partTweenn2:Play()
-   end
-end
-
-local function mode6(mouset)
-  if mouset then
-   if mouset:FindFirstChildWhichIsA("TouchTransmitter") then
+ elseif toolmode == 6 then
+ if mouset:FindFirstChildWhichIsA("TouchTransmitter") then
        print("Part " .. tostring(mouset.Name) .. " have TouchInterest")
         firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, mouset, 0)
         firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, mouset, 1)
       else
      print("Part " .. tostring(mouset.Name) .. " dont have TouchInterest")
    end
-local Highlight = Instance.new("Highlight")
-Highlight.Parent = mouset
-Highlight.Adornee = mouset
-Highlight.FillTransparency = 0
-Highlight.FillColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineTransparency = 0
-game.Debris:AddItem(Highlight, 4)
-
-local partTweenn2 = game:GetService("TweenService"):Create(Highlight, TweenInfo.new(1, Enum.EasingStyle.Sine), {
-        FillTransparency = 1,
-        OutlineTransparency = 1
-    })
-    partTweenn2:Play()
-  end
-end
-
-local function mode7(mouset)
-  if mouset then
-    for _, soun in next, mouset:GetDescendants() do
+ elseif toolmode == 7 then
+ for _, soun in next, mouset:GetDescendants() do
        if soun:IsA("Sound") then
 print(soun.ClassName, soun.SoundId)
        elseif soun:IsA("SoundEffect") then
 print(soun.ClassName, soun:GetFullName())
        end
     end
-local Highlight = Instance.new("Highlight")
-Highlight.Parent = mouset
-Highlight.Adornee = mouset
-Highlight.FillTransparency = 0
-Highlight.FillColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-Highlight.OutlineTransparency = 0
-game.Debris:AddItem(Highlight, 4)
-
-local partTweenn2 = game:GetService("TweenService"):Create(Highlight, TweenInfo.new(1, Enum.EasingStyle.Sine), {
-        FillTransparency = 1,
-        OutlineTransparency = 1
-    })
-    partTweenn2:Play()
-  end
-end
-
-local function mode8(mouset)
-  if mouset and mouset.Parent:FindFirstChildOfClass("Humanoid") then
-  
+ elseif toolmode == 8 then
+ if mouset and mouset.Parent:FindFirstChildOfClass("Humanoid") then
   for _, animation in ipairs(mouset.Parent:FindFirstChildOfClass("Humanoid"):GetPlayingAnimationTracks()) do
     print(mouset.Parent:FindFirstChildOfClass("Humanoid").RigType, animation.Animation.ClassName, animation.Animation.AnimationId)
   end
+ end
+ elseif toolmode == 9 then
+ print("Values of " .. mouset:GetFullName() .. ":")
+    local function prinAtrs(inst)
+      for atmame, atval in next, inst:GetAttributes() do
+        print(`{inst:GetFullName()}: ({atname}) {typeof(atval) == "table" and tostring("{" .. table.concat(atval, ", ") .. "}") or tostring(atval)}`)
+      end
+    end
+    for _, v in next, mouset:GetDescendants() do
+      if v:IsA("ValueBase") then
+        print(v.ClassName, v:GetFullName(), v.Value)
+      end
+      prinAtrs(v)
+    end
+ elseif toolmode == 10 then
+  for _, scr in next, mouset:GetDescendants() do
+    if scr:IsA("LocalScript") then
+      print("Environment of " .. scr:GetFullName() .. ":")
+      for i, v in next, getsenv(scr) do
+        print(scr:GetFullName() .. ": ", i, v)
+      end
+    end
+  end
+ elseif toolmode == 11 then
+   for _, modul in next, mouset:GetDescendants() do
+     if modul:IsA("ModuleScript") then
+       print("Functions of " .. modul:GetFullName() .. ": ")
+       for i, v in require(modul) do
+         print(scr:GetFullName() .. ": ", i, v)
+       end
+     end
+   end
+ end
   
 local Highlight = Instance.new("Highlight")
 Highlight.Parent = mouset
@@ -383,12 +362,41 @@ local partTweenn2 = game:GetService("TweenService"):Create(Highlight, TweenInfo.
         OutlineTransparency = 1
     })
     partTweenn2:Play()
-    partTweenn2.Completed:Wait()
   end
-end
+end 
+
+--[[local selectClass = Instance.new("TextBox", ScreenGui)
+selectClass.Text = ""
+selectClass.PlaceholderText = "Find by class"
+selectClass.Position = UDim2.new(0.83, 0, 0.58, 0)
+selectClass.Size = UDim2.new(0.04, 0.04, 0.04, 4)
+selectClass.BackgroundColor3 = extra.BackgroundColor3
+selectClass.TextColor3 = Color3.new(1, 1, 1)
+selectClass.MultiLine = false
+selectClass.PlaceholderColor3 = Color3.new(0.4, 0.4, 0.4)
+selectClass.TextScaled = true
+
+selectClass.FocusLost:Connect(function(enterPress)
+  if not enterPress then return end
+  if string.len(selectClass.Text) > 60 then
+    warn("Does such a class exist?")
+    selectClass.Text = selectClass.Text:sub(1, 35)
+  end
+  
+  if not game:GetService("ReflectionService"):GetClass(selectClass.Text) then
+    print(selectClass.Text)
+    error("This class does not exist", 0)
+  end
+    if toolmode == 1 then
+      for _, v in next, game:GetDescendants() do
+        if v:IsA(selectClass.Text) then
+          print(v:GetFullName())
+        end
+      end
+   end
+end)]]--
 
 tool.Activated:Connect(function()
-  local owner = game.Players:FindFirstChild(tool.Parent.Name)
   local mouset = game.Players.LocalPlayer:GetMouse().Target
 local sound = Instance.new("Sound", handle)
 sound.SoundId = "rbxassetid://7496207231"
@@ -397,34 +405,23 @@ sound.PlaybackSpeed = 1
 sound.Looped = false
 sound:Play()
 game.Debris:AddItem(sound, 4)
-   if toolmode == 1 then
-mode1(mouset)
-   elseif toolmode == 2 then
-mode2(mouset)
-   elseif toolmode == 3 then
-mode3(mouset)
-   elseif toolmode == 4 then
-mode4(mouset)
-   elseif toolmode == 5 then
-mode5(mouset)
-   elseif toolmode == 6 then
-mode6(mouset)
-   elseif toolmode == 7 then
-mode7(mouset)
-   elseif toolmode == 8 then
-mode8(mouset)
-   end
+   mode(mouset)
 end)
 
 tool.Equipped:Connect(function()
-  ScreenGui.Enabled = true
+  disconn(game.Players.LocalPlayer.Character, {"ChildAdded", "DescendantAdded"}, "Disable")
+  sethiddenproperty(ScreenGui, "Enabled", true)
 end)
 
 tool.Unequipped:Connect(function()
-  ScreenGui.Enabled = false
+  disconn(game.Players.LocalPlayer.Character, {"ChildAdded", "DescendantAdded"}, "Enable")
+  sethiddenproperty(ScreenGui, "Enabled", false)
 end)
 
 tool.Destroying:Connect(function()
   restorefunction(getrawmetatable(game)["__namecall"])
+  restorefunction(getrawmetatable(game)["__index"])
   restorefunction(getrawmetatable(workspace)["__newindex"])
+  antibackpack:Disconnect()
 end)
+disconn(game.Players.LocalPlayer.Backpack, {"ChildAdded", "DescendantAdded"}, "Enable")
